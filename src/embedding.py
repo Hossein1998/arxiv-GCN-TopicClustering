@@ -6,6 +6,7 @@ import pickle
 from typing import List
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
+from torch_geometric.data import Data
 
 MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
@@ -20,8 +21,12 @@ def load_model(model_name: str = MODEL_NAME):
         tokenizer (transformers.PreTrainedTokenizer)
         model (transformers.PreTrainedModel)
     """
-    tokenizer = AutoTokenizer.from_pretrained(model_name)
-    model = AutoModel.from_pretrained(model_name)
+    # Access the token from environment variable
+    hf_token = os.getenv("HF_TOKEN")
+    
+    # Pass the token to from_pretrained
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_auth_token=hf_token)
+    model = AutoModel.from_pretrained(model_name, use_auth_token=hf_token)
     
     # If pad_token is not defined for this tokenizer, set it to eos_token
     if tokenizer.pad_token is None:
@@ -174,6 +179,8 @@ def main():
     # ---------------------------------------
     # 7) Create a Data Object from PyTorch Geometric
     # ---------------------------------------
+    from torch_geometric.data import Data  # Ensure this import is present
+
     data = Data(
         x=embeddings,           # Node features
         edge_index=edge_index,  # Edge indices
