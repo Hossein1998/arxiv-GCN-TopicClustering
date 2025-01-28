@@ -1,0 +1,11 @@
+torch
+torch-geometric
+scikit-learn
+matplotlib
+numpy
+pandas
+gensim
+nltk
+tqdm
+node2vec
+gdown
