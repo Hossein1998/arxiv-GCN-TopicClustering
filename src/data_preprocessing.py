@@ -31,8 +31,7 @@ def remove_missing_values(df, columns):
     initial_shape = df.shape
     df_clean = df.dropna(subset=columns)
     final_shape = df_clean.shape
-    dropped_rows = initial_shape[0] - final_shape[0]
-    print(f"Number of rows removed due to missing values: {dropped_rows}")
+    dropped_rows = initial_shape[0] - final_shape[0]  
     return df_clean
 
 def clean_text(text):
@@ -90,7 +89,7 @@ def main():
     # 0) Download paper_info.csv from Google Drive
     # ------------------------------
     FILE_ID = "1qhsP1zqjQ2IAwKKzdkpcJ4T1y-2SGrUJ"
-    DESTINATION = "dataset/raw/paper_info.csv"
+    DESTINATION = "data/raw/paper_info.csv"
 
     os.makedirs(os.path.dirname(DESTINATION), exist_ok=True)
 
@@ -105,7 +104,7 @@ def main():
     # ------------------------------
     # Load paper_info.csv with columns ['node_id', 'title', 'abstract']
     papers_csv_path = DESTINATION  # Path updated after download
-    papers_preprocessed_csv_path = "dataset/processed/paper_info_preprocessed.csv"
+    papers_preprocessed_csv_path = "data/processed/paper_info_preprocessed.csv"
 
     papers_df = load_dataset(papers_csv_path)
     if papers_df is None:
@@ -121,9 +120,9 @@ def main():
     # 3) Clean Text in 'title' and 'abstract' Columns
     # ------------------------------
     for col in text_columns:
-        
+        print(f"Cleaning text in column '{col}'...")
         papers_clean_df[col] = papers_clean_df[col].apply(clean_text)
-    
+    print("Text cleaning completed.")
 
     # ------------------------------
     # 4) Save the Preprocessed Paper Information
@@ -134,12 +133,13 @@ def main():
     # 5) Identify Valid Nodes After Cleaning
     # ------------------------------
     valid_nodes = set(papers_clean_df['node_id'].astype(str))
-    
+    print(f"Number of valid nodes after cleaning: {len(valid_nodes)}")
+
     # ------------------------------
     # 6) Load and Filter edge_list.csv Based on Valid Nodes
     # ------------------------------
-    edges_csv_path = "dataset/raw/edge_list.csv"  # Update this path as needed
-    edges_preprocessed_csv_path = "dataset/processed/edges_preprocessed.csv"
+    edges_csv_path = "data/raw/edge_list.csv"  # Update this path as needed
+    edges_preprocessed_csv_path = "data/processed/edges_preprocessed.csv"
 
     edges_df = load_dataset(edges_csv_path)
     if edges_df is None:
@@ -163,8 +163,8 @@ def main():
     # ------------------------------
     # 7) Load and Filter labels.csv Based on Valid Nodes
     # ------------------------------
-    labels_csv_path = "dataset/raw/labels.csv"  # Update this path as needed
-    labels_preprocessed_csv_path = "dataset/processed/labels_preprocessed.csv"
+    labels_csv_path = "data/raw/labels.csv"  # Update this path as needed
+    labels_preprocessed_csv_path = "data/processed/labels_preprocessed.csv"
 
     labels_df = load_dataset(labels_csv_path)
     if labels_df is None:
@@ -271,9 +271,9 @@ def main():
     # ------------------------------
     # 7) Save the Subsets to New CSV Files
     # ------------------------------
-    edges_sub_df.to_csv("dataset/processed/edges_sub.csv", index=False)
-    papers_sub_df.to_csv("dataset/processed/papers_sub.csv", index=False)
-    labels_sub_df.to_csv("dataset/processed/labels_sub.csv", index=False)
+    edges_sub_df.to_csv("data/processed/edges_sub.csv", index=False)
+    papers_sub_df.to_csv("data/processed/papers_sub.csv", index=False)
+    labels_sub_df.to_csv("data/processed/labels_sub.csv", index=False)
 
     print("Finished sampling!")
     print(f"Selected {len(sampled_nodes)} nodes (papers).")
