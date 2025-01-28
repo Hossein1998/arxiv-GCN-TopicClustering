@@ -34,7 +34,3 @@ The **Cora GNN Project** leverages Graph Convolutional Networks (GCN) and topic 
 - **Evaluation & Visualization**: Assesses and visualizes clustering performance.
 - **Resume Capability**: Ensures embedding generation can resume from interruptions.
 
-## Directory Structure
-
-
-cora_gnn_project/ │ ├── data/ │ ├── raw/ │ │ ├── paper_info.csv │ │ ├── edge_list.csv │ │ └── labels.csv │ └── processed/ │ ├── paper_info_preprocessed.csv │ ├── edges_preprocessed.csv │ ├── labels_preprocessed.csv │ ├── edges_sub.csv │ ├── papers_sub.csv │ ├── labels_sub.csv │ ├── embeddings.pt │ ├── partial_embeddings.pt │ └── data.pt │ ├── notebooks/ │ └── exploration.ipynb │ ├── src/ │ ├── init.py │ ├── data_preprocessing.py │ ├── embedding.py │ ├── gnn_training.py │ ├── clustering.py │ ├── lda_clustering.py │ ├── result_analysis.py │ ├── visualization.py │ └── utils.py │ ├── models/ │ ├── gcn_model.pth │ └── node2vec_embeddings.pt │ ├── results/ │ ├── plots/ │ │ ├── gcn_tsne.png │ │ ├── clustering_comparison.png │ │ ├── kmeans_tsne.png │ │ └── lda_tsne.png │ └── metrics/ │ ├── clustering_metrics.pkl │ ├── cluster_labels.pkl │ ├── lda_clustering_metrics.pkl │ └── lda_cluster_labels.pkl │ ├── README.md ├── requirements.txt └── setup.py
