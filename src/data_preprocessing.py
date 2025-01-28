@@ -90,7 +90,7 @@ def main():
     # 0) Download paper_info.csv from Google Drive
     # ------------------------------
     FILE_ID = "1qhsP1zqjQ2IAwKKzdkpcJ4T1y-2SGrUJ"
-    DESTINATION = "data/raw/paper_info.csv"
+    DESTINATION = "dataset/raw/paper_info.csv"
 
     os.makedirs(os.path.dirname(DESTINATION), exist_ok=True)
 
@@ -105,7 +105,7 @@ def main():
     # ------------------------------
     # Load paper_info.csv with columns ['node_id', 'title', 'abstract']
     papers_csv_path = DESTINATION  # Path updated after download
-    papers_preprocessed_csv_path = "data/processed/paper_info_preprocessed.csv"
+    papers_preprocessed_csv_path = "dataset/processed/paper_info_preprocessed.csv"
 
     papers_df = load_dataset(papers_csv_path)
     if papers_df is None:
@@ -138,8 +138,8 @@ def main():
     # ------------------------------
     # 6) Load and Filter edge_list.csv Based on Valid Nodes
     # ------------------------------
-    edges_csv_path = "data/raw/edge_list.csv"  # Update this path as needed
-    edges_preprocessed_csv_path = "data/processed/edges_preprocessed.csv"
+    edges_csv_path = "dataset/raw/edge_list.csv"  # Update this path as needed
+    edges_preprocessed_csv_path = "dataset/processed/edges_preprocessed.csv"
 
     edges_df = load_dataset(edges_csv_path)
     if edges_df is None:
@@ -163,8 +163,8 @@ def main():
     # ------------------------------
     # 7) Load and Filter labels.csv Based on Valid Nodes
     # ------------------------------
-    labels_csv_path = "data/raw/labels.csv"  # Update this path as needed
-    labels_preprocessed_csv_path = "data/processed/labels_preprocessed.csv"
+    labels_csv_path = "dataset/raw/labels.csv"  # Update this path as needed
+    labels_preprocessed_csv_path = "dataset/processed/labels_preprocessed.csv"
 
     labels_df = load_dataset(labels_csv_path)
     if labels_df is None:
