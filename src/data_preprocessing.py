@@ -121,9 +121,9 @@ def main():
     # 3) Clean Text in 'title' and 'abstract' Columns
     # ------------------------------
     for col in text_columns:
-        print(f"Cleaning text in column '{col}'...")
+        
         papers_clean_df[col] = papers_clean_df[col].apply(clean_text)
-    print("Text cleaning completed.")
+    
 
     # ------------------------------
     # 4) Save the Preprocessed Paper Information
@@ -134,8 +134,7 @@ def main():
     # 5) Identify Valid Nodes After Cleaning
     # ------------------------------
     valid_nodes = set(papers_clean_df['node_id'].astype(str))
-    print(f"Number of valid nodes after cleaning: {len(valid_nodes)}")
-
+    
     # ------------------------------
     # 6) Load and Filter edge_list.csv Based on Valid Nodes
     # ------------------------------
@@ -272,9 +271,9 @@ def main():
     # ------------------------------
     # 7) Save the Subsets to New CSV Files
     # ------------------------------
-    edges_sub_df.to_csv("data/processed/edges_sub.csv", index=False)
-    papers_sub_df.to_csv("data/processed/papers_sub.csv", index=False)
-    labels_sub_df.to_csv("data/processed/labels_sub.csv", index=False)
+    edges_sub_df.to_csv("dataset/processed/edges_sub.csv", index=False)
+    papers_sub_df.to_csv("dataset/processed/papers_sub.csv", index=False)
+    labels_sub_df.to_csv("dataset/processed/labels_sub.csv", index=False)
 
     print("Finished sampling!")
     print(f"Selected {len(sampled_nodes)} nodes (papers).")
