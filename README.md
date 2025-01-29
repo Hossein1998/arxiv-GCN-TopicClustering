@@ -29,3 +29,20 @@ The **arxiv GNN Project** leverages Graph Convolutional Networks (GCN) and topic
 - **Evaluation & Visualization**: Assesses and visualizes clustering performance.
 - **Resume Capability**: Ensures embedding generation can resume from interruptions.
 
+ ## Installation
+
+To set up the project and install the required dependencies, follow these steps:
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/Hossein1998/arxiv-GCN-TopicClustering.git
+cd arxiv-GCN-TopicClustering
+
+### 2. Install Dependencies
+
+Install the required Python packages using pip:
+
+pip install -r requirements.txt
+
+
+
