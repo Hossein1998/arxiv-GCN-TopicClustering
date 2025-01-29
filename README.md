@@ -29,15 +29,3 @@ The **arxiv GNN Project** leverages Graph Convolutional Networks (GCN) and topic
 - **Evaluation & Visualization**: Assesses and visualizes clustering performance.
 - **Resume Capability**: Ensures embedding generation can resume from interruptions.
 
-- ## Installation
-
-Follow these steps to set up the project environment and install all necessary dependencies.
-
-### 1. Clone the Repository
-
-Begin by cloning the repository to your local machine:
-
-```bash
-git clone https://github.com/yourusername/cora_gnn_project.git
-cd cora_gnn_project/
-
