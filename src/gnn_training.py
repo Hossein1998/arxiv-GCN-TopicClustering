@@ -1,5 +1,3 @@
-# src/gnn_training.py
-
 import os
 import torch
 import torch.nn.functional as F
@@ -11,6 +9,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score, normalized_mutual_info_score
 import gdown
+import warnings
 
 # ===============================
 # 1. Utility Functions
@@ -53,13 +52,10 @@ def load_data(data_path: str) -> Data:
         print("data.pt not found. Please ensure the file exists or modify the DATA_FILE_ID and DATA_URL.")
         raise FileNotFoundError(f"The file '{data_path}' does not exist.")
     
-    # Load the data with handling FutureWarning
-    try:
+    # Suppress FutureWarning for torch.load
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", FutureWarning)
         data = torch.load(data_path)
-    except FutureWarning as e:
-        print(e)
-        # In future versions, set weights_only=True for security
-        data = torch.load(data_path, weights_only=True)
     
     return data
 
@@ -92,94 +88,6 @@ def adjust_labels(data: Data) -> Data:
         print(f"Labels adjusted to start from 0. New label range: {data.y.min()} to {data.y.max()}")
     else:
         print(f"Label range: {data.y.min()} to {data.y.max()}")
-    return data
-
-def train_val_test_split(data: Data, train_ratio: float = 0.6, val_ratio: float = 0.2, test_ratio: float = 0.2, num_classes: int = 40) -> Data:
-    """
-    Splits the dataset into training, validation, and test masks.
-    
-    Args:
-        data (Data): The PyTorch Geometric data object.
-        train_ratio (float): Proportion of data for training.
-        val_ratio (float): Proportion of data for validation.
-        test_ratio (float): Proportion of data for testing.
-        num_classes (int): Number of unique classes.
-    
-    Returns:
-        Data: The data object with updated masks.
-    """
-    # Initialize masks
-    train_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
-    val_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
-    test_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
-
-    # For each class, split the nodes
-    for c in range(num_classes):
-        idx = (data.y == c).nonzero(as_tuple=True)[0]
-        idx = idx[torch.randperm(idx.size(0))]  # Shuffle
-
-        n_train = int(len(idx) * train_ratio)
-        n_val = int(len(idx) * val_ratio)
-        n_test = len(idx) - n_train - n_val
-
-        if n_train == 0:
-            n_train = 1  # Ensure at least one training sample per class
-        if n_val == 0 and n_test > 0:
-            n_val = 1
-        if n_test == 0 and n_val > 1:
-            n_test = 1
-
-        train_mask[idx[:n_train]] = True
-        val_mask[idx[n_train:n_train + n_val]] = True
-        test_mask[idx[n_train + n_val:]] = True
-
-    data.train_mask = train_mask
-    data.val_mask = val_mask
-    data.test_mask = test_mask
-
-    return data
-
-def check_and_fix_edge_indices(data: Data) -> Data:
-    """
-    Ensures that all edge indices are within the valid range of node indices.
-    Removes any invalid edges that reference non-existent nodes.
-    
-    Args:
-        data (Data): The PyTorch Geometric data object.
-    
-    Returns:
-        Data: The updated data object with valid edge indices.
-    """
-    max_edge_index = data.edge_index.max().item()
-    print(f"Max node index in edge_index: {max_edge_index}")
-    print(f"Number of nodes: {data.num_nodes}")
-
-    # Verify if any edge references a node index >= num_nodes
-    if max_edge_index >= data.num_nodes:
-        print(f"Found edge indices with node indices >= {data.num_nodes}. Removing these edges.")
-        # Identify invalid edges
-        invalid_mask = (data.edge_index[0] >= data.num_nodes) | (data.edge_index[1] >= data.num_nodes)
-        num_invalid = invalid_mask.sum().item()
-        print(f"Number of invalid edges: {num_invalid}")
-
-        # Remove invalid edges
-        data.edge_index = data.edge_index[:, ~invalid_mask]
-        print(f"New edge_index shape: {data.edge_index.shape}")
-    else:
-        print("All edge indices are within the valid range.")
-
-    # Ensure labels are in correct range
-    assert data.y.min().item() >= 0, f"Minimum label is {data.y.min().item()}, should be >=0"
-    assert data.y.max().item() < data.num_classes, f"Maximum label is {data.y.max().item()}, should be < {data.num_classes}"
-
-    # Ensure edge indices are valid
-    assert data.edge_index.min().item() >= 0, "Negative edge indices found."
-    assert data.edge_index.max().item() < data.num_nodes, "Edge indices exceed number of nodes."
-
-    # Ensure labels are of type long
-    if data.y.dtype != torch.long:
-        data.y = data.y.long()
-
     return data
 
 # ===============================
@@ -223,7 +131,106 @@ class GCN(torch.nn.Module):
         return x, hidden
 
 # ===============================
-# 3. Training and Evaluation Functions
+# 3. Data Splitting
+# ===============================
+
+def train_val_test_split(data: Data, train_ratio: float = 0.6, val_ratio: float = 0.2, test_ratio: float = 0.2, num_classes: int = 40) -> Data:
+    """
+    Splits the dataset into training, validation, and test masks.
+    
+    Args:
+        data (Data): The PyTorch Geometric data object.
+        train_ratio (float): Proportion of data for training.
+        val_ratio (float): Proportion of data for validation.
+        test_ratio (float): Proportion of data for testing.
+        num_classes (int): Number of unique classes.
+    
+    Returns:
+        Data: The data object with updated masks.
+    """
+    # Initialize masks
+    train_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+    val_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+    test_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+
+    # For each class, split the nodes
+    for c in range(num_classes):
+        idx = (data.y == c).nonzero(as_tuple=True)[0]
+        if idx.numel() == 0:
+            continue  # Skip if no samples for the class
+        idx = idx[torch.randperm(idx.size(0))]  # Shuffle
+
+        n_train = int(len(idx) * train_ratio)
+        n_val = int(len(idx) * val_ratio)
+        n_test = len(idx) - n_train - n_val
+
+        if n_train == 0:
+            n_train = 1  # Ensure at least one training sample per class
+        if n_val == 0 and n_test > 0:
+            n_val = 1
+        if n_test == 0 and n_val > 1:
+            n_test = 1
+
+        train_mask[idx[:n_train]] = True
+        val_mask[idx[n_train:n_train + n_val]] = True
+        test_mask[idx[n_train + n_val:]] = True
+
+    data.train_mask = train_mask
+    data.val_mask = val_mask
+    data.test_mask = test_mask
+
+    return data
+
+# ===============================
+# 4. Data Integrity Checks and Fix
+# ===============================
+
+def check_and_fix_edge_indices(data: Data, num_classes: int) -> Data:
+    """
+    Ensures that all edge indices are within the valid range of node indices.
+    Removes any invalid edges that reference non-existent nodes.
+    
+    Args:
+        data (Data): The PyTorch Geometric data object.
+        num_classes (int): Number of unique classes.
+    
+    Returns:
+        Data: The updated data object with valid edge indices.
+    """
+    max_edge_index = data.edge_index.max().item()
+    print(f"Max node index in edge_index: {max_edge_index}")
+    print(f"Number of nodes: {data.num_nodes}")
+
+    # Verify if any edge references a node index >= num_nodes
+    if max_edge_index >= data.num_nodes:
+        print(f"Found edge indices with node indices >= {data.num_nodes}. Removing these edges.")
+        # Identify invalid edges
+        invalid_mask = (data.edge_index[0] >= data.num_nodes) | (data.edge_index[1] >= data.num_nodes)
+        num_invalid = invalid_mask.sum().item()
+        print(f"Number of invalid edges: {num_invalid}")
+
+        # Remove invalid edges
+        data.edge_index = data.edge_index[:, ~invalid_mask]
+        print(f"New edge_index shape: {data.edge_index.shape}")
+    else:
+        print("All edge indices are within the valid range.")
+
+    # Ensure labels are in correct range
+    assert data.y.min().item() >= 0, f"Minimum label is {data.y.min().item()}, should be >=0"
+    assert data.y.max().item() < num_classes, f"Maximum label is {data.y.max().item()}, should be < {num_classes}"
+
+    # Ensure edge indices are valid
+    assert data.edge_index.min().item() >= 0, "Negative edge indices found."
+    assert data.edge_index.max().item() < data.num_nodes, "Edge indices exceed number of nodes."
+
+    # Ensure labels are of type long
+    if data.y.dtype != torch.long:
+        data.y = data.y.long()
+
+    return data
+
+# ===============================
+# 5. Training and Evaluation Functions
 # ===============================
 
 def train(model: torch.nn.Module, data: Data, optimizer: torch.optim.Optimizer, criterion: torch.nn.Module) -> float:
@@ -286,7 +293,7 @@ def get_hidden_embeddings(model: torch.nn.Module, data: Data) -> np.ndarray:
     return hidden.cpu().numpy()
 
 # ===============================
-# 4. Main Function
+# 6. Main Function
 # ===============================
 
 def main():
@@ -323,7 +330,7 @@ def main():
     data = train_val_test_split(data, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, num_classes=num_classes)
 
     # Data integrity checks
-    data = check_and_fix_edge_indices(data)
+    data = check_and_fix_edge_indices(data, num_classes)
 
     # Device configuration
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -387,7 +394,7 @@ def main():
     print(f'\nTest Accuracy: {test_acc:.4f}')
 
     # ===============================
-    # 5. Evaluation with t-SNE Visualization
+    # 7. Evaluation with t-SNE Visualization
     # ===============================
     
     print("\nGenerating embeddings and visualizing with t-SNE...")
