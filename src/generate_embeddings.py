@@ -7,17 +7,21 @@ from typing import List
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 from torch_geometric.data import Data
+from huggingface_hub import login  # Hugging Face authentication
 
-# Change to the parent directory if the script is running from the src folder
+# 🔹 Directly set the Hugging Face token
+HF_TOKEN = "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"
+
+# 🔹 Authenticate with Hugging Face
+login(token=HF_TOKEN)
+
+# 🔹 Ensure the script runs from the main project directory
 current_path = os.getcwd()
 if current_path.endswith("src"):
     os.chdir("..")  # Move one directory up to the main project folder
 print(f"Current working directory: {os.getcwd()}")  # Confirm the current directory
 
-# Retrieve the Hugging Face token from environment variables
-HF_TOKEN = os.getenv("HF_TOKEN")
-
-# Define the model name
+# 🔹 Define the model name
 MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
 def download_data_file():
@@ -53,6 +57,76 @@ def load_model(model_name: str = MODEL_NAME):
         tokenizer.pad_token = tokenizer.eos_token
     
     return tokenizer, model
+
+def get_embeddings_with_resume(
+    texts: List[str],
+    tokenizer,
+    model,
+    batch_size: int = 8,
+    max_length: int = 2048,
+    device: torch.device = torch.device("cpu"),
+    temp_path: str = "data/processed/partial_embeddings.pt"
+) -> torch.Tensor:
+    """
+    Generate embeddings for a list of texts with resume capability.
+
+    Args:
+        texts (List[str]): List of input texts.
+        tokenizer: Hugging Face tokenizer.
+        model: Pretrained Hugging Face model.
+        batch_size (int): Number of texts per batch.
+        max_length (int): Maximum token length per text.
+        device (torch.device): Device to run the model on.
+        temp_path (str): Path to save partial embeddings.
+
+    Returns:
+        torch.Tensor: Concatenated embeddings for all texts.
+    """
+    partial_embeddings = []
+    start_index = 0
+
+    # Load existing partial embeddings if available
+    if os.path.exists(temp_path):
+        partial_embeddings = torch.load(temp_path)
+        start_index = len(partial_embeddings)
+        print(f"Found existing partial embeddings with {start_index} batches.")
+    else:
+        print("No existing partial embeddings found. Starting fresh.")
+
+    total_batches = (len(texts) + batch_size - 1) // batch_size
+
+    # Generate embeddings batch by batch
+    for batch_i in tqdm(range(start_index, total_batches), desc="Generating embeddings", unit="batch"):
+        start = batch_i * batch_size
+        end = start + batch_size
+        batch_texts = texts[start:end]
+
+        # Tokenize the batch of texts
+        inputs = tokenizer(
+            batch_texts,
+            padding=True,
+            truncation=True,
+            return_tensors="pt",
+            max_length=max_length
+        )
+
+        inputs = {k: v.to(device) for k, v in inputs.items()}
+
+        # Forward pass through the model
+        with torch.no_grad():
+            outputs = model(**inputs)
+            # Use the mean of the last hidden state as the embedding
+            embeddings = outputs.last_hidden_state.mean(dim=1).cpu()
+
+        # Append embeddings of the current batch to the list
+        partial_embeddings.append(embeddings)
+
+        # Save partial embeddings to file
+        torch.save(partial_embeddings, temp_path)
+
+    # Concatenate all embeddings
+    all_embeddings = torch.cat(partial_embeddings, dim=0)
+    return all_embeddings
 
 def main():
     """
