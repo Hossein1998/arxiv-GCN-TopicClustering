@@ -35,17 +35,18 @@ To set up the project and install the required dependencies, follow these steps:
 
 Clone the project repository using the following command:
 
-bash
+```bash
 git clone https://github.com/Hossein1998/arxiv-GCN-TopicClustering.git
 cd arxiv-GCN-TopicClustering
-
+```
 
 ### 2. Install Dependencies
 
 Install the required Python packages using pip:
 
-bash
+```bash
 pip install -r requirements.txt
+```
 
 ## Usage Instructions
 
@@ -123,9 +124,8 @@ python lda_clustering.py
 
 ## Model Architecture
 
-![Model Architecture](model_architecture.png)
+![Model Architecture](Model-Architecture.png)
 
-This diagram illustrates the flow of data and the architecture of the system, from **data preprocessing** to **model training** and **clustering**.
 
 
 
