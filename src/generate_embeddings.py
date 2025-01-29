@@ -9,30 +9,35 @@ from tqdm import tqdm
 from torch_geometric.data import Data
 from huggingface_hub import login  # Hugging Face authentication
 
-HF_TOKEN = "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"
-
-login(token=HF_TOKEN)
+DATA_FILE_ID = "1Xkrz7nI9vAfIN0Ij2T_qLL0V4F9ORRgq"
+DATA_URL = f"https://drive.google.com/uc?id={DATA_FILE_ID}"
+DATA_PATH = "data/processed/data.pt"
 
 current_path = os.getcwd()
 if current_path.endswith("src"):
     os.chdir("..")  # Move one directory up to the main project folder
 print(f"Current working directory: {os.getcwd()}")  # Confirm the current directory
 
-MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
+HF_TOKEN = os.getenv("HF_TOKEN")
 
 def download_data_file():
     """
     Download the 'data.pt' file from Google Drive in case of errors.
     """
-    file_id = '1Xkrz7nI9vAfIN0Ij2T_qLL0V4F9ORRgq'
-    url = f"https://drive.google.com/uc?id={file_id}"
-    output_path = "data/processed/data.pt"
+    os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
     
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    
-    print(f"Downloading data.pt from Google Drive to {output_path}...")
-    gdown.download(url, output_path, quiet=False)
-    print(f"Download complete: {output_path}")
+    print(f"Downloading data.pt from Google Drive to {DATA_PATH}...")
+    gdown.download(DATA_URL, DATA_PATH, quiet=False)
+    print(f"Download complete: {DATA_PATH}")
+
+if not HF_TOKEN:
+    print("Error: HF_TOKEN is missing! Downloading 'data.pt' instead...")
+    download_data_file()
+    exit()
+
+login(token=HF_TOKEN)
+
+MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
 def load_model(model_name: str = MODEL_NAME):
     """
