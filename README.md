@@ -3,7 +3,6 @@
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
-- [Setup](#setup)
 - [Usage](#usage)
   - [1. Data Preprocessing](#1-data-preprocessing)
   - [2. Embedding Generation](#2-embedding-generation)
