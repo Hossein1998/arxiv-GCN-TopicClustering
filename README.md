@@ -3,17 +3,16 @@
 - [Overview](#overview)
 - [Features](#features)
 - [Installation](#installation)
-- [Usage](#usage)
-  - [1. Data Preprocessing](#1-data-preprocessing)
-  - [2. Embedding Generation](#2-embedding-generation)
-  - [3. GCN Training](#3-gcn-training)
-  - [4. K-Means Clustering](#4-k-means-clustering)
-  - [5. LDA-based Clustering](#5-lda-based-clustering)
-  - [6. Result Analysis](#6-result-analysis)
-  - [7. Visualization](#7-visualization)
-- [Running on Google Colab](#running-on-google-colab)
-- [License](#license)
-- [Acknowledgements](#acknowledgements)
+- [Usage Instructions](#usage-instructions)
+  - [1. Create a Subgraph](#1-create-a-subgraph)
+  - [2. Preprocess Text Data (Abstracts & Titles)](#2-preprocess-text-data-abstracts--titles)
+  - [3. Generate Embeddings](#3-generate-embeddings)
+  - [4. Train GCN and Perform K-Means Clustering](#4-train-gcn-and-perform-k-means-clustering)
+  - [5. Perform LDA-based Clustering](#5-perform-lda-based-clustering)
+- [Model Architecture](#model-architecture)  
+- [Visualization](#visualization)
+
+
 
 ## Overview
 
@@ -36,35 +35,43 @@ To set up the project and install the required dependencies, follow these steps:
 
 Clone the project repository using the following command:
 
-```bash
+bash
 git clone https://github.com/Hossein1998/arxiv-GCN-TopicClustering.git
 cd arxiv-GCN-TopicClustering
-```
+
 
 ### 2. Install Dependencies
 
 Install the required Python packages using pip:
 
-```bash
+bash
 pip install -r requirements.txt
-```
-## Usage
 
-### 1. Data Preprocessing
-- Load and clean the abstract and title of each paper (e.g., CSV format).
-- Remove missing values from key columns (`title`, `abstract`).
+## Usage Instructions
+
+### 1. create-a-subgraph
+When working with graphs that have multiple disconnected components, analyzing the largest connected component ensures more accurate results for tasks like clustering and classification, as smaller disconnected components might lead to irrelevant or misleading outcomes. Removing these smaller components and noise helps in obtaining cleaner, more reliable data. Additionally, focusing on the largest connected component optimizes computational resources by reducing complexity, making the analysis more efficient and faster, especially when computational resources are limited.
+
+Run:
+```bash
+python create_subgraph.py
+```
+
+### 2. Preprocess Text Data (Abstracts & Titles)
+
+- Remove missing values from key columns (title, abstract).
 - Perform text cleaning (lowercasing, removing punctuation, etc.).
 - Filter and subset data based on valid node IDs.
 - Save the preprocessed data for further use.
 
 Run:
 ```bash
-python preprocess_data.py
+python preprocess_text_data.py
 ```
 
-### 2. Embedding Generation
+### 3. Generate Embeddings
 
-- Load a pretrained model (e.g., LLaMA).
+- Load **LLaMA model**.
 - Generate **title and abstract embeddings** for each paper.
 - Save embeddings and processed graph data for future use.
 
@@ -73,29 +80,33 @@ Run:
 python generate_embeddings.py
 ```
 
-### 3. GCN Training
+### 4. Train GCN and Perform K-Means Clustering
 
 - Load **title and abstract embeddings** along with graph data.
 - Train a **Graph Convolutional Network (GCN)** for node classification.
 - Use **early stopping** and validation accuracy to select the best model.
-- Extract hidden embeddings for clustering.
-- Save the trained model and embeddings for downstream tasks.
+- Extract **hidden embeddings** for downstream clustering tasks.
+- Apply **K-Means clustering** to the embeddings.
+- Evaluate clustering quality using metrics like **Silhouette Score**, **Davies-Bouldin Index**, **Adjusted Rand Index**, and **Normalized Mutual Information**.
+- Visualize the clustering results using **t-SNE**.
 
 Run:
 ```bash
-python gnn_training.py
+python gnn_training_kmeans_clustering.py
 ```
 
-### 4. K-Means Clustering
+### 5. Perform LDA-based Clustering
 
-- Apply **K-Means clustering** on **GCN hidden embeddings**.
-- Evaluate clustering quality using various metrics.
-- Save cluster labels and performance metrics.
-- Visualize clustering results with **t-SNE**.
+- **Load and preprocess** the dataset (e.g., title and abstract).
+- **Train an LDA model** to perform topic modeling on the dataset.
+- **Assign topics** to each document based on the highest probability.
+- **Reduce dimensions** using TruncatedSVD for further analysis.
+- **Evaluate clustering quality** using metrics like Silhouette Score, Davies-Bouldin Index, and Adjusted Rand Index.
+- **Visualize results** with t-SNE and save the clustering results.
 
 Run:
 ```bash
-python kmeans_clustering.py
+python LDA_clustering.py
 ```
 
 ### 5. LDA-based Clustering
@@ -110,26 +121,12 @@ Run:
 python lda_clustering.py
 ```
 
-### 6. Result Analysis
+## Model Architecture
 
-- Evaluate clustering results using various metrics:
-  - **Silhouette Score**
-  - **Adjusted Rand Index (ARI)**
-  - **Normalized Mutual Information (NMI)**
-- Compare **K-Means** and **LDA-based clustering** performance.
+![Model Architecture](model_architecture.png)
 
-Run:
-```bash
-python result_analysis.py
-```
+This diagram illustrates the flow of data and the architecture of the system, from **data preprocessing** to **model training** and **clustering**.
 
 
-### 7. Visualization
-- Convert the **graph structure** into a **NetworkX** visualization.
-- Reduce dimensionality using **t-SNE** for better cluster visualization.
-- Save high-quality plots for analysis.
 
-Run:
-```bash
-python visualize_clusters.py
-```
+## Visualization
