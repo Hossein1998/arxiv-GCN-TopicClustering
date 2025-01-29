@@ -5,12 +5,12 @@ import random
 import gdown
 import os
 
-# تغییر مسیر به پوشه اصلی پروژه اگر در src اجرا می‌شود
+
 current_path = os.getcwd()
 if current_path.endswith("src"):
-    os.chdir("..")  # یک پوشه به عقب برگرد
+    os.chdir("..")  
 
-print(f"Current working directory: {os.getcwd()}")  # بررسی مسیر جدید
+print(f"Current working directory: {os.getcwd()}") 
 
 def load_dataset(csv_path):
     try:
