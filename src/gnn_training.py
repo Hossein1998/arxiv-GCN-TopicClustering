@@ -6,6 +6,7 @@ from torch_geometric.data import Data
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
 import numpy as np
+from utils import save_metrics, save_cluster_labels
 import gdown
 
 # Change working directory if running from src/
@@ -24,6 +25,7 @@ def download_data_file():
     Downloads the 'data.pt' file from Google Drive if it is missing.
     """
     os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
+    
     print(f"Downloading data.pt from Google Drive to {DATA_PATH}...")
     gdown.download(DATA_URL, DATA_PATH, quiet=False)
     print(f"Download complete: {DATA_PATH}")
@@ -42,11 +44,13 @@ class GCN(torch.nn.Module):
 
     def forward(self, data):
         x, edge_index = data.x, data.edge_index
+
         x = self.conv1(x, edge_index)
         x = F.relu(x)
         x = F.dropout(x, p=self.dropout, training=self.training)
         hidden = x  
         x = self.conv2(x, edge_index)
+
         return x, hidden
 
 def train(model, data, optimizer, criterion):
@@ -75,28 +79,16 @@ def get_hidden_embeddings(model, data):
         _, hidden = model(data)
     return hidden.cpu().numpy()
 
-def validate_edge_index(data):
-    """
-    Validates and fixes the edge index to ensure all node references are valid.
-    """
-    max_edge_index = data.edge_index.max().item()
-    if max_edge_index >= data.num_nodes:
-        print(f"Invalid edge detected! Max node index in edge_index: {max_edge_index}, but num_nodes: {data.num_nodes}")
-        valid_mask = (data.edge_index[0] < data.num_nodes) & (data.edge_index[1] < data.num_nodes)
-        data.edge_index = data.edge_index[:, valid_mask]
-        print(f"Fixed edge_index shape: {data.edge_index.shape}")
-    else:
-        print("Edge indices are valid.")
-    return data
-
 def main():
     """
     Runs the complete GCN model training and evaluation process.
     """
+
     # Ensure necessary directories exist
     processed_dir = "data/processed"
     models_dir = "models"
     results_dir = "results/plots"
+    
     os.makedirs(processed_dir, exist_ok=True)
     os.makedirs(models_dir, exist_ok=True)
     os.makedirs(results_dir, exist_ok=True)
@@ -109,9 +101,6 @@ def main():
         print("Downloading data.pt from Google Drive...")
         download_data_file()
         data = torch.load(DATA_PATH)  
-
-    # Validate and fix edge_index if necessary
-    data = validate_edge_index(data)
 
     # Display dataset information
     print(f"\nDataset Information:")
@@ -143,6 +132,7 @@ def main():
     patience_counter = 0
 
     print("\nStarting GCN training...\n")
+
     for epoch in range(1, epochs + 1):
         loss = train(model, data, optimizer, criterion)
         train_acc = evaluate(model, data, data.train_mask)
@@ -165,9 +155,35 @@ def main():
     # Save the best model
     if best_model_state is not None:
         model.load_state_dict(best_model_state)
+
     model_save_path = os.path.join(models_dir, "gcn_model.pth")
     torch.save(model.state_dict(), model_save_path)
     print(f"Best GCN model saved to {model_save_path}")
+
+    # Evaluate the model on the test set
+    test_acc = evaluate(model, data, data.test_mask)
+    print(f"\nTest Accuracy: {test_acc:.4f}")
+
+    # Generate embeddings and visualize with t-SNE
+    print("\nGenerating embeddings and visualizing with t-SNE...")
+
+    hidden_embeddings = get_hidden_embeddings(model, data)
+    tsne = TSNE(n_components=2, random_state=42, perplexity=30, n_iter=1000)
+    embeddings_2d = tsne.fit_transform(hidden_embeddings)
+
+    # Create the t-SNE plot
+    plt.figure(figsize=(12, 10))
+    scatter = plt.scatter(embeddings_2d[:, 0], embeddings_2d[:, 1], c=data.y.cpu().numpy(), cmap='tab20', alpha=0.7, s=10)
+    handles, _ = scatter.legend_elements(num=output_dim)
+    labels = [f"Class {i}" for i in range(output_dim)]
+    plt.legend(handles, labels, title="Classes", bbox_to_anchor=(1.05, 1), loc='upper left', ncol=2)
+    plt.title('t-SNE Visualization of GCN Embeddings')
+    plt.tight_layout()
+
+    plot_save_path = os.path.join(results_dir, "gcn_tsne.png")
+    plt.savefig(plot_save_path, dpi=300)
+    plt.show()
+    print(f"t-SNE plot saved to {plot_save_path}")
 
 if __name__ == "__main__":
     main()
