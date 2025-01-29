@@ -1,9 +1,62 @@
-import pickle
+import string
+import nltk
 import os
+import pickle
 import matplotlib.pyplot as plt
 from sklearn.metrics import silhouette_score, davies_bouldin_score, adjusted_rand_score, normalized_mutual_info_score
 from sklearn.manifold import TSNE
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
 
+# Download necessary NLTK resources
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+
+# ------------------------------
+# Preprocessing function to clean and tokenize text
+# ------------------------------
+def preprocess_text(texts):
+    """
+    Preprocess input texts by:
+    1. Converting to lowercase
+    2. Removing punctuation
+    3. Tokenizing the text
+    4. Removing stopwords
+    5. Lemmatizing words
+
+    Args:
+        texts (list of str): List of input text documents.
+
+    Returns:
+        list of list: List of tokenized and cleaned texts.
+    """
+    stop_words = set(stopwords.words('english'))  # Set of stopwords to filter out
+    lemmatizer = WordNetLemmatizer()  # Initialize the lemmatizer
+    processed_texts = []  # List to store processed texts
+    
+    # Iterate over each text document
+    for idx, text in enumerate(texts):
+        try:
+            # Convert text to lowercase
+            text = text.lower()
+            # Remove punctuation
+            text = text.translate(str.maketrans('', '', string.punctuation))
+            # Tokenize the text into words
+            tokens = text.split()
+            # Remove stopwords and lemmatize the remaining words
+            tokens = [lemmatizer.lemmatize(word) for word in tokens if word not in stop_words]
+            processed_texts.append(tokens)  # Append the processed tokens
+        except Exception as e:
+            print(f"Error processing text at index {idx}: {e}")
+            # Append an empty list in case of an error
+            processed_texts.append([])
+
+    return processed_texts
+
+# ------------------------------
+# Clustering Evaluation Functions
+# ------------------------------
 def evaluate_clustering(true_labels, cluster_labels, embeddings):
     """
     Evaluate clustering performance using various metrics.
