@@ -9,19 +9,15 @@ from tqdm import tqdm
 from torch_geometric.data import Data
 from huggingface_hub import login  # Hugging Face authentication
 
-# 🔹 Directly set the Hugging Face token
 HF_TOKEN = "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"
 
-# 🔹 Authenticate with Hugging Face
 login(token=HF_TOKEN)
 
-# 🔹 Ensure the script runs from the main project directory
 current_path = os.getcwd()
 if current_path.endswith("src"):
     os.chdir("..")  # Move one directory up to the main project folder
 print(f"Current working directory: {os.getcwd()}")  # Confirm the current directory
 
-# 🔹 Define the model name
 MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
 
 def download_data_file():
