@@ -5,6 +5,13 @@ import random
 import gdown
 import os
 
+# تغییر مسیر به پوشه اصلی پروژه اگر در src اجرا می‌شود
+current_path = os.getcwd()
+if current_path.endswith("src"):
+    os.chdir("..")  # یک پوشه به عقب برگرد
+
+print(f"Current working directory: {os.getcwd()}")  # بررسی مسیر جدید
+
 def load_dataset(csv_path):
     try:
         df = pd.read_csv(csv_path)
@@ -38,6 +45,7 @@ def clean_text(text):
 def save_preprocessed_data(df, save_path):
     """Save preprocessed DataFrame to CSV."""
     try:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
         df.to_csv(save_path, index=False)
         print(f"Preprocessed DataFrame saved to {save_path}")
     except Exception as e:
@@ -46,6 +54,7 @@ def save_preprocessed_data(df, save_path):
 def download_file_from_google_drive(file_id, destination):
     """Download a file from Google Drive."""
     try:
+        os.makedirs(os.path.dirname(destination), exist_ok=True)
         url = f"https://drive.google.com/uc?id={file_id}"
         gdown.download(url, destination, quiet=False)
         print(f"File downloaded successfully and saved to {destination}")
