@@ -79,6 +79,51 @@ def get_hidden_embeddings(model, data):
         _, hidden = model(data)
     return hidden.cpu().numpy()
 
+def train_val_test_split(data, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, num_classes=40):
+    """
+    Splits the dataset into training, validation, and test masks.
+
+    Args:
+        data (Data): The PyTorch Geometric data object.
+        train_ratio (float): Proportion of data for training.
+        val_ratio (float): Proportion of data for validation.
+        test_ratio (float): Proportion of data for testing.
+        num_classes (int): Number of unique classes.
+
+    Returns:
+        Data: The data object with updated masks.
+    """
+    # Initialize masks
+    train_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+    val_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+    test_mask = torch.zeros(data.num_nodes, dtype=torch.bool)
+
+    # For each class, split the nodes
+    for c in range(num_classes):
+        idx = (data.y == c).nonzero(as_tuple=True)[0]
+        idx = idx[torch.randperm(idx.size(0))]  # Shuffle
+
+        n_train = int(len(idx) * train_ratio)
+        n_val = int(len(idx) * val_ratio)
+        n_test = len(idx) - n_train - n_val
+
+        if n_train == 0:
+            n_train = 1  # Ensure at least one training sample per class
+        if n_val == 0 and n_test > 0:
+            n_val = 1
+        if n_test == 0 and n_val > 1:
+            n_test = 1
+
+        train_mask[idx[:n_train]] = True
+        val_mask[idx[n_train:n_train + n_val]] = True
+        test_mask[idx[n_train + n_val:]] = True
+
+    data.train_mask = train_mask
+    data.val_mask = val_mask
+    data.test_mask = test_mask
+
+    return data
+
 def main():
     """
     Runs the complete GCN model training and evaluation process.
@@ -102,13 +147,20 @@ def main():
         download_data_file()
         data = torch.load(DATA_PATH)  
 
-    # Display dataset information
+    # Ensure labels are in correct range
+    if data.y.min() == 1:
+        data.y = data.y - 1  # Adjust labels if they start from 1
+
+    num_classes = data.y.max().item() + 1
     print(f"\nDataset Information:")
     print(f"Number of Nodes: {data.num_nodes}")
     print(f"Number of Features: {data.num_features}")
-    print(f"Number of Classes: {data.y.max().item() + 1}")
+    print(f"Number of Classes: {num_classes}")
     print(f"Edge Index Shape: {data.edge_index.shape}")
     print(f"Labels Shape: {data.y.shape}")
+
+    # Apply train/val/test split
+    data = train_val_test_split(data, train_ratio=0.6, val_ratio=0.2, test_ratio=0.2, num_classes=num_classes)
 
     # Select device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -117,7 +169,7 @@ def main():
     # Define model parameters
     input_dim = data.num_features
     hidden_dim = 512
-    output_dim = data.y.max().item() + 1
+    output_dim = num_classes
     dropout = 0.5
 
     model = GCN(input_dim=input_dim, hidden_dim=hidden_dim, output_dim=output_dim, dropout=dropout).to(device)
