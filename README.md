@@ -1,4 +1,4 @@
-# Cora GNN Project
+# arxiv GNN Project
 
 ![Cora GNN](https://github.com/yourusername/cora_gnn_project/blob/main/assets/cora_gnn_banner.png)
 
