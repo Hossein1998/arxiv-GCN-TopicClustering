@@ -7,10 +7,6 @@ from typing import List
 from transformers import AutoTokenizer, AutoModel
 from tqdm import tqdm
 from torch_geometric.data import Data
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
 
 # Change to the parent directory if the script is running from the src folder
 current_path = os.getcwd()
