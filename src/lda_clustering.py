@@ -14,7 +14,7 @@ def main():
     # ===============================
     
     # Path to the CSV file
-    csv_path = 'data/processed/papers_sub.csv'
+    csv_path = '/content/arxiv-GCN-TopicClustering/data/processed/papers_preprocessed.csv'
     
     # Load data
     df = pd.read_csv(csv_path)
@@ -98,11 +98,11 @@ def main():
     # ===============================
     
     # Load true labels
-    labels_csv_path = "data/processed/labels_sub.csv"
+    labels_csv_path = "/content/arxiv-GCN-TopicClustering/data/processed/labels_preprocessed.csv"
     df_labels = pd.read_csv(labels_csv_path)
     
     # Load papers to ensure alignment
-    papers_csv_path = "data/processed/papers_sub.csv"
+    papers_csv_path = "/content/arxiv-GCN-TopicClustering/data/processed/papers_preprocessed.csv"
     df_papers = pd.read_csv(papers_csv_path)
     node_order = df_papers['node_id'].tolist()
     
