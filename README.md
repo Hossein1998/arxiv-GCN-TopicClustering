@@ -2,7 +2,6 @@
 
 - [Overview](#overview)
 - [Features](#features)
-- [Directory Structure](#directory-structure)
 - [Installation](#installation)
 - [Setup](#setup)
 - [Usage](#usage)
