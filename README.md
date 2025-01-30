@@ -21,7 +21,7 @@ The **arxiv GNN Project** leverages Graph Convolutional Networks (GCN) and topic
 
 ## Features
 
-- **Data Preprocessing**: Cleans and prepares raw data.
+- **Data Preprocessing**: Data Preprocessing: Cleans and prepares raw data by creating a subgraph that isolates the largest connected component, removing smaller components and noise for more accurate and efficient analysis.
 - **Embedding Generation**: Utilizes LLaMa models for generating node embeddings.
 - **GCN Training**: Trains a GCN for node classification.
 - **Clustering**: Implements K-Means and LDA-based clustering.
