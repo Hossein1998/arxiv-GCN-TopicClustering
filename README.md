@@ -111,18 +111,6 @@ Run:
 python LDA_clustering.py
 ```
 
-### 5. LDA-based Clustering
-
-- Apply **Latent Dirichlet Allocation (LDA)** to cluster papers based on **title and abstract**.
-- Reduce dimensionality using **TruncatedSVD** for better clustering performance.
-- Assign topics to each document based on the **highest probability**.
-- Evaluate clustering results and visualize topic distributions.
-
-Run:
-```bash
-python lda_clustering.py
-```
-
 ## Model Architecture
 
 ![Model Architecture](img/Model-Architecture.png)
