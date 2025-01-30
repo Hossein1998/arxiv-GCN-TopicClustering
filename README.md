@@ -155,31 +155,25 @@ Here we see the **t-SNE** visualization of clustering results based on **LDA (La
 
 ## Results and Analysis
 
-### GCN-based K-Means Clustering
-- **Silhouette Score**: 0.1982  
-- **Davies-Bouldin Index**: 1.2253  
-- **Adjusted Rand Index (ARI)**: 0.0140  
-- **Normalized Mutual Information (NMI)**: 0.1561  
 
-The GCN-based K-Means clustering showed a **Silhouette Score** of 0.1982, indicating moderate cluster cohesion and separation. The **Davies-Bouldin Index** (1.2253) suggests better cluster compactness compared to the LDA-based approach. However, **ARI** (0.0140) remains very low, while **NMI** (0.1561) shows slightly improved mutual information alignment.
+### Clustering Performance Metrics
 
-### LDA-based Grouping
-- **Silhouette Score**: -0.2084  
-- **Davies-Bouldin Index**: 2.5526  
-- **Adjusted Rand Index (ARI)**: 0.0407  
-- **Normalized Mutual Information (NMI)**: 0.0658  
-
-The LDA-based grouping resulted in a negative **Silhouette Score**, indicating poor clustering cohesion and separation. The **Davies-Bouldin Index** value of 2.5526 suggests suboptimal cluster compactness and separation. Both **ARI** (0.0407) and **NMI** (0.0658) values are low, showing weak agreement between the clusters and the ground truth.
+| Metric                          | GCN-based K-Means Clustering | LDA-based Grouping |
+|---------------------------------|------------------------------|---------------------|
+| **Silhouette Score**            | 0.1315                       | -0.2360            |
+| **Davies-Bouldin Index**        | 1.6187                       | 2.5649             |
+| **Adjusted Rand Index (ARI)**   | 0.0987                       | -0.0002             |
+| **Normalized Mutual Information (NMI)** | 0.3258                | 0.0056             |
 
 ---
 
-### Key Observations
-1. **Clustering Performance**: The GCN-based K-Means clustering performed better overall compared to LDA-based grouping, as indicated by higher **Silhouette Score** and lower **Davies-Bouldin Index**.
-2. **Agreement with Ground Truth**: Both methods show weak agreement with ground truth categories, but GCN-based K-Means exhibited slightly higher **NMI**.
-3. **Challenges in Clustering**: The low ARI and NMI values across both methods highlight the difficulty in aligning generated clusters with ground truth categories.
+Based on the updated results, **GCN-based K-Means Clustering** performs significantly better than **LDA-based Grouping**:
+- The **Silhouette Score** for **GCN-based K-Means** is positive (0.1315), indicating better cohesion and separation of clusters, while LDA-based grouping has a negative score.
+- **GCN-based K-Means** also has a lower **Davies-Bouldin Index** (1.6187), suggesting more compact clusters compared to LDA (2.5649).
+- **NMI** (0.3258) for GCN-based K-Means is substantially higher than LDA-based grouping (0.0056), showing better alignment with the ground truth.
+- Although **ARI** is still low for both methods, GCN-based K-Means is clearly the superior approach, showing better clustering performance.
 
-2. **Agreement with Ground Truth**: Both methods show weak agreement with ground truth categories, but GCN-based K-Means exhibited slightly higher **NMI**.
-3. **Challenges in Clustering**: The low ARI and NMI values across both methods highlight the difficulty in aligning generated clusters with ground truth categories.
+In conclusion, **GCN-based K-Means clustering** is the better model, delivering higher clustering quality and better alignment with the ground truth compare.
 
 
 
